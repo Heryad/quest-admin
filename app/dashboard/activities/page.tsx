@@ -125,9 +125,7 @@ const columns: ColumnDef<DataKey>[] = [
 
 
 
-export default function ActivityPage({
-  className,
-}: React.HTMLAttributes<HTMLDivElement>) {
+export default function ActivityPage(){
   const [searchData, setSearchData] = useState<any>([]);
 
   const [date, setDate] = React.useState<DateRange | undefined>({
