@@ -22,6 +22,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -36,10 +37,10 @@ import {
 
 type Props = {};
 type DataKey = {
-  ID: string;
-  cityName: string;
-  cityDesc: string;
-  activity: string;
+    ID: string;
+    adminName: string;
+    adminEmail: string;
+    adminLevel: string;
 };
 
 const columns: ColumnDef<DataKey>[] = [
@@ -48,30 +49,23 @@ const columns: ColumnDef<DataKey>[] = [
     header: "ID",
   },
   {
-    accessorKey: "cityName",
-    header: "City",
+    accessorKey: "adminName",
+    header: "Admin",
     cell: ({ row }) => {
       return (
         <div className="flex gap-2 items-center">
-          <p>{row.getValue("cityName")} </p>
+          <p>{row.getValue("adminName")} </p>
         </div>
       );
     },
   },
   {
-    accessorKey: "cityDesc",
-    header: "Desc",
+    accessorKey: "adminEmail",
+    header: "Email Address",
   },
   {
-    accessorKey: "activity",
-    header: "Activities",
-    cell: ({ row }) => {
-      return (
-        <div className="flex gap-2 items-center">
-          <p>0</p>
-        </div>
-      );
-    },
+    accessorKey: "adminLevel",
+    header: "Level",
   },
   {
     accessorKey: "function",
@@ -90,7 +84,7 @@ const columns: ColumnDef<DataKey>[] = [
               <AlertDialogHeader>
                 <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                 <AlertDialogDescription>
-                  This action cannot be undone. This will permanently delete {row.getValue('cityName')}
+                  This action cannot be undone. This will permanently delete {row.getValue('providerName')}'s account
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
@@ -102,7 +96,7 @@ const columns: ColumnDef<DataKey>[] = [
                       'Content-Type': 'application/x-www-form-urlencoded'
                     },
                     body: new URLSearchParams({
-                      'tbl': 'cities',
+                      'tbl': 'admins',
                       'id': row.getValue('ID'),
                     })
                   }).then(response => response.json())
@@ -120,7 +114,7 @@ const columns: ColumnDef<DataKey>[] = [
 ];
 
 
-export default function UsersPage({}: Props) {
+export default function AdminsPage({}: Props) {
   const [searchData, setSearchData] = useState<any>([]);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -128,27 +122,30 @@ export default function UsersPage({}: Props) {
 
   function handleSearch(term: string) {
     let mData = data;
-    mData = data.filter((data: { ctTitle: string; }) =>
-      data.ctTitle.toLocaleLowerCase().includes(term.toLocaleLowerCase())
+    mData = data.filter((data: { adminName: string; }) =>
+      data.adminName.toLocaleLowerCase().includes(term.toLocaleLowerCase())
     )
     setSearchData(mData);
   }
 
-  const [cityName, setCityName] = useState('');
-  const [cityDesc, setCityDesc] = useState('');
+  const [adminName, setAdminName] = useState('');
+  const [adminEmail, setAdminEmail] = useState('');
+  const [adminPassword, setAdminPassword] = useState('');
+  const [adminLevel, setAdminLevel] = useState('');
   const [open, setOpen] = useState(false);
 
-  const addCity = () => {
+  const newAdmin = () => {
     setIsLoading(true);
-    fetch('https://pear-trusting-femur.glitch.me/v2/newCity', {
+    fetch('https://pear-trusting-femur.glitch.me/v2/newadmin', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded'
       },
       body: new URLSearchParams({
-        'cityName': cityName,
-        'cityDesc': cityDesc,
-        'cityImage': 'google.com'
+        'adminName': adminName,
+        'adminEmail': adminEmail,
+        'adminPassword': adminPassword,
+        'adminLevel': adminLevel
       })
     }).then(response => response.json())
       .then(data => {
@@ -164,7 +161,7 @@ export default function UsersPage({}: Props) {
 
   const fetchData = () => {
     setData([]);
-    fetch('https://pear-trusting-femur.glitch.me/v2/vwcity', {
+    fetch('https://pear-trusting-femur.glitch.me/v2/vwadmins', {
       method: 'GET',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded'
@@ -184,7 +181,7 @@ export default function UsersPage({}: Props) {
 
   return (
     <div className="flex flex-col gap-5  w-full">
-      <PageTitle title="Cities" />
+      <PageTitle title="Admins" />
       <div className="flex row-auto">
         <Input
           placeholder="Search ..."
@@ -209,37 +206,45 @@ export default function UsersPage({}: Props) {
           </DialogTrigger>
           <DialogContent className="sm:max-w-[500px]">
             <DialogHeader>
-              <DialogTitle>Add City</DialogTitle>
+              <DialogTitle>Add Admin</DialogTitle>
               <DialogDescription>
-                enter city details then press save.
+                enter admin details then press save.
               </DialogDescription>
             </DialogHeader>
             <div className="flex row-auto">
               <div className="grid gap-4 py-4">
                 <div className="grid grid-cols-4 items-center gap-4">
                   <Label htmlFor="name" className="text-right">
-                    City Name
+                    Name 
                   </Label>
-                  <Input id="name" className="col-span-3" value={cityName} onChange={e => {setCityName(e.currentTarget.value)}}/>
+                  <Input id="name" className="col-span-3" value={adminName} onChange={e => {setAdminName(e.currentTarget.value)}}/>
                 </div>
 
                 <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="username" className="text-right">
-                    Description
+                  <Label htmlFor="name" className="text-right">
+                    Email Address
                   </Label>
-                  <Input id="username" className="col-span-3 h-52" value={cityDesc} onChange={e => {setCityDesc(e.currentTarget.value)}}/>
+                  <Input id="name" className="col-span-3" value={adminEmail} onChange={e => {setAdminEmail(e.currentTarget.value)}}/>
                 </div>
 
                 <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="price" className="text-right">
-                    Image Cover
+                  <Label htmlFor="name" className="text-right">
+                    Password 
                   </Label>
-                  <Input id="price" className="col-span-3" type="file" />
+                  <Input id="name" className="col-span-3" value={adminPassword} onChange={e => {setAdminPassword(e.currentTarget.value)}}/>
                 </div>
+
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="name" className="text-right">
+                    Level 
+                  </Label>
+                  <Input id="name" className="col-span-3" value={adminLevel} onChange={e => {setAdminLevel(e.currentTarget.value)}}/>
+                </div>
+
               </div>
             </div>
             <DialogFooter>
-              <Button type="submit" onClick={() => {addCity()}} disabled={isLoading}>{isLoading ? 'Please Wait ...' : 'Save changes'}</Button>
+              <Button type="submit" onClick={() => {newAdmin()}} disabled={isLoading}>{isLoading ? 'Please Wait ...' : 'Save changes'}</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>

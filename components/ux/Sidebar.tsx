@@ -95,7 +95,7 @@ const items: NavProps[] = [
     {
         title: 'Settings',
         icon: Settings,
-        href: '/settings',
+        href: '/',
         type: 'link'
     },
     {

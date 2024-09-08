@@ -1,23 +1,16 @@
 "use client";
 import { DataTable } from "@/components/DataTable";
 import { ColumnDef } from "@tanstack/react-table";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import PageTitle from "@/components/PageTitle";
 import { Button } from "@/components/ui/button";
 import {
-  Bell,
   CalendarIcon,
-  Delete,
-  DeleteIcon,
   Download,
   Eye,
-  LucideAArrowDown,
-  LucideDelete,
   Pen,
   Plus,
   Search,
-  Star,
-  User2,
   X,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -52,48 +45,80 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+
+
 type Props = {};
-type Payment = {
-  city: string;
-  title: string;
-  desc: string;
-  price: string;
-  date: string;
+type DataKey = {
+  ID: string;
+  actCity: string;
+  actTitle: string;
+  actDesc: string;
+  actPrice: string;
+  startDate: string;
   feedback: string;
   banner: boolean;
 };
 
-const columns: ColumnDef<Payment>[] = [
+const columns: ColumnDef<DataKey>[] = [
   {
-    accessorKey: "city",
+    accessorKey: "ID",
+    header: "ID",
+  },
+  {
+    accessorKey: "actCity",
     header: "City Group",
   },
   {
-    accessorKey: "title",
+    accessorKey: "actTitle",
     header: "Title",
   },
   {
-    accessorKey: "desc",
+    accessorKey: "actDesc",
     header: "Description",
-  },
-  {
-    accessorKey: "price",
-    header: "Price",
-    cell: ({row}) => {
-      return(
-        <div className="bg-teal-400 p-4 rounded-lg">
-          <text>{row.getValue('price')}</text>
+    cell: ({ row }) => {
+      return (
+        <div className="ml-1 inline-block w-[250px]">
+          <span className="font-semibold line-clamp-1">
+          {row.getValue('actDesc')}
+          </span>
         </div>
       )
     }
   },
   {
-    accessorKey: "date",
+    accessorKey: "actPrice",
+    header: "Price",
+    cell: ({ row }) => {
+      return (
+        <div className="bg-teal-400 pl-4 pr-4 pt-2 pb-2 max-w-12 justify-center items-center flex rounded-lg">
+          <text>{row.getValue('actPrice')}</text>
+        </div>
+      )
+    }
+  },
+  {
+    accessorKey: "startDate",
     header: "Date",
   },
   {
     accessorKey: "feedback",
     header: "Feedbacks",
+    cell: ({ row }) => {
+      return (
+        <text>0</text>
+      )
+    }
   },
   {
     accessorKey: "function",
@@ -107,9 +132,37 @@ const columns: ColumnDef<Payment>[] = [
           <div className="bg-green-700 w-10 h-10 flex items-center justify-center mr-2 rounded-md p-2 cursor-pointer">
             <Pen color="white" />
           </div>
-          <div className="bg-red-700 w-10 h-10 flex items-center justify-center mr-2 rounded-md p-2 cursor-pointer">
-            <X color="white" />
-          </div>
+          <AlertDialog>
+            <AlertDialogTrigger>
+              <Button className="bg-red-700 w-10 h-10 flex items-center justify-center mr-2 rounded-md p-2 cursor-pointer"><X color="white" /></Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This action cannot be undone. This will permanently delete {row.getValue('actTitle')}
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={() => {
+                  fetch('https://pear-trusting-femur.glitch.me/v2/delete', {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: new URLSearchParams({
+                      'tbl': 'activities',
+                      'id': row.getValue('ID'),
+                    })
+                  }).then(response => response.json())
+                    .then(data => {
+                     window.location.reload();
+                  });
+                }}>Continue</AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
       );
     },
@@ -123,117 +176,6 @@ const columns: ColumnDef<Payment>[] = [
   },
 ];
 
-const data: Payment[] = [
-  {
-    city: "Las Vegas",
-    title: "Grand Casino Experience",
-    desc: "Indulge in a 3-day casino extravaganza with luxury accommodations and fine dining.",
-    price: "250$",
-    date: "22-10-2024 - 25-10-2024",
-    feedback: "30",
-    banner: false,
-  },
-  {
-    city: "Paris",
-    title: "Romantic Seine River Cruise",
-    desc: "Embark on a romantic cruise along the Seine River with gourmet meals and champagne.",
-    price: "300$",
-    date: "12-09-2024 - 15-09-2024",
-    feedback: "28",
-    banner: true,
-  },
-  {
-    city: "Tokyo",
-    title: "Sushi and Sumo Wrestling Tour",
-    desc: "Experience Tokyo's culinary delights and traditional sumo wrestling over 5 exciting days.",
-    price: "180$",
-    date: "05-12-2024 - 09-12-2024",
-    feedback: "35",
-    banner: false,
-  },
-  {
-    city: "London",
-    title: "Historical Landmarks Discovery",
-    desc: "Explore London's iconic landmarks and hidden gems with knowledgeable guides.",
-    price: "200$",
-    date: "18-10-2024 - 21-10-2024",
-    feedback: "22",
-    banner: true,
-  },
-  {
-    city: "Sydney",
-    title: "Surfing Adventure",
-    desc: "Learn to surf on Sydney's famous beaches and enjoy beachfront accommodations.",
-    price: "220$",
-    date: "08-11-2024 - 10-11-2024",
-    feedback: "20",
-    banner: false,
-  },
-  {
-    city: "Rome",
-    title: "Ancient Rome Exploration",
-    desc: "Immerse yourself in the history of ancient Rome with guided tours and museum visits.",
-    price: "270$",
-    date: "25-09-2024 - 28-09-2024",
-    feedback: "26",
-    banner: true,
-  },
-  {
-    city: "Dubai",
-    title: "Luxury Desert Safari",
-    desc: "Experience the thrill of a desert safari with luxurious accommodations and camel rides.",
-    price: "350$",
-    date: "15-10-2024 - 18-10-2024",
-    feedback: "32",
-    banner: false,
-  },
-  {
-    city: "Cape Town",
-    title: "Wildlife Safari Adventure",
-    desc: "Embark on a safari adventure in Cape Town's wildlife reserves and stay in eco-friendly lodges.",
-    price: "300$",
-    date: "20-11-2024 - 23-11-2024",
-    feedback: "24",
-    banner: true,
-  },
-  {
-    city: "Barcelona",
-    title: "Tapas Tasting Tour",
-    desc: "Enjoy a gastronomic journey through Barcelona's best tapas bars and local cuisine.",
-    price: "180$",
-    date: "10-12-2024 - 12-12-2024",
-    feedback: "29",
-    banner: false,
-  },
-  {
-    city: "Vienna",
-    title: "Classical Music and Culture",
-    desc: "Immerse yourself in Vienna's classical music scene and cultural heritage over a 4-day tour.",
-    price: "240$",
-    date: "03-11-2024 - 06-11-2024",
-    feedback: "27",
-    banner: true,
-  },
-  {
-    city: "Venice",
-    title: "Venetian Gondola Experience",
-    desc: "Sail through Venice's picturesque canals on a traditional gondola with romantic dinner included.",
-    price: "280$",
-    date: "28-09-2024 - 01-10-2024",
-    feedback: "23",
-    banner: false,
-  },
-  {
-    city: "Amsterdam",
-    title: "Bike Tour and Canal Cruise",
-    desc: "Explore Amsterdam by bike and cruise its charming canals with local guides.",
-    price: "190$",
-    date: "07-10-2024 - 09-10-2024",
-    feedback: "31",
-    banner: true,
-  },
-];
-
 export default function ActivityPage() {
   const [searchData, setSearchData] = useState<any>([]);
 
@@ -242,12 +184,140 @@ export default function ActivityPage() {
     to: addDays(new Date(), 0),
   });
 
+  const [data, setData] = useState<DataKey | any>([]);
+
   function handleSearch(term: string) {
     let mData = data;
-    mData = data.filter((data) =>
-      data.city.toLocaleLowerCase().includes(term.toLocaleLowerCase())
-    );
+    mData = data.filter((data: { ctTitle: string; }) =>
+      data.ctTitle.toLocaleLowerCase().includes(term.toLocaleLowerCase())
+    )
     setSearchData(mData);
+  }
+
+  const fetchData = () => {
+    setData([]);
+    fetch('https://pear-trusting-femur.glitch.me/v2/vwactivity', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      }
+    }).then(response => response.json())
+      .then(data => {
+        console.log(data.data);
+        setData(
+          data.data
+        );
+      });
+  }
+
+  useEffect(() => {
+    fetchData();
+    fetchSelectData();
+  }, [])
+
+  const [vendorName, setVendorName] = useState('')
+  const [actTitle, setActTitle] = useState('')
+  const [actDesc, setActDesc] = useState('')
+  const [actCity, setActCity] = useState('')
+  const [actPrice, setActPrice] = useState('')
+  const [actQuantity, setActQuantity] = useState('')
+  const [isFullYear, setIsFullYear] = useState('')
+  const [isHoliday, setIsHoliday] = useState('')
+  const [actCategory, setActCategory] = useState('')
+  const [actHighlights, setActHighlights] = useState('')
+  const [actMeetingPoint, setMeetingPoint] = useState('')
+  const [actLat, setActLat] = useState('')
+  const [actLong, setActLong] = useState('')
+  const [actConfirmation, setActConfirmation] = useState('')
+
+  const [isLoading, setIsLoading] = useState(false);
+  const [open, setOpen] = useState(false);
+  const addNewActivity = () => {
+    setIsLoading(true);
+    fetch('https://pear-trusting-femur.glitch.me/v2/newactivity', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: new URLSearchParams({
+        'vendorName': vendorName,
+        'actTitle': actTitle,
+        'actDesc': actDesc,
+        'actCity': actCity,
+        'actPrice': actPrice,
+        'actQuantity': actQuantity,
+        'startDate': getFormattedDate(date?.from),
+        'endDate': getFormattedDate(date?.to),
+        'isFullYear': isFullYear,
+        'isHoliday': isHoliday,
+        'actCategory': actCategory,
+        'actHighlights': actHighlights,
+        'meetingPoint': actMeetingPoint,
+        'actLat': actLat,
+        'actLong': actLong,
+        'isConfirmation': actConfirmation,
+        'img1': '',
+        'img2': '',
+        'img3': '',
+        'img4': '',
+        'img5': '',
+      })
+    }).then(response => response.json())
+      .then(data => {
+        setIsLoading(false);
+        if (data.message == 'ok' && data.status == 200) {
+          setOpen(false);
+          fetchData();
+        } else {
+          console.log(data);
+        }
+      });
+  }
+
+  const getFormattedDate = (mDate: any) => {
+    let year = mDate.getFullYear();
+    let month = (1 + mDate.getMonth()).toString().padStart(2, '0');
+    let day = mDate.getDate().toString().padStart(2, '0');
+    return month + '/' + day + '/' + year;
+  }
+
+  const [vendorSelectData, setVendorSelectData] = useState([{ vendorName: '1' }]);
+  const [citySelectData, setCitySelectData] = useState([{ cityName: '1' }]);
+  const [categorySelectData, setCategorySelectData] = useState([{ ctTitle: '1' }]);
+
+  const fetchSelectData = () => {
+    fetch('https://pear-trusting-femur.glitch.me/v2/vwvendor', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      }
+    }).then(response => response.json())
+      .then(data => {
+        console.log(data);
+        setVendorSelectData(data.data);
+      });
+
+    fetch('https://pear-trusting-femur.glitch.me/v2/vwCity', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      }
+    }).then(response => response.json())
+      .then(data => {
+        console.log(data);
+        setCitySelectData(data.data);
+      });
+
+    fetch('https://pear-trusting-femur.glitch.me/v2/vwcategory', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      }
+    }).then(response => response.json())
+      .then(data => {
+        console.log(data);
+        setCategorySelectData(data.data);
+      });
   }
 
   return (
@@ -269,7 +339,7 @@ export default function ActivityPage() {
           <Download className="h-4 w-4 ml-2" />
         </Button>
 
-        <Dialog>
+        <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
             <Button className="w-40 ml-5 bg-teal-600" size="icon">
               Add
@@ -287,53 +357,57 @@ export default function ActivityPage() {
               <div className="mr-5 sm:max-w-[550px]">
                 <div className="grid gap-4 py-4">
 
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="icon" className="text-right">
-                    Vendor
-                  </Label>
-                  <Select>
-                  <SelectTrigger className="col-span-3">
-                    <SelectValue placeholder="Select a vendor" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectGroup>
-                      <SelectLabel>Vendor</SelectLabel>
-                      <SelectItem value="apple">Moonline Travel</SelectItem>
-                      <SelectItem value="banana">Tche Tche</SelectItem>
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
-                </div>
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="icon" className="text-right">
+                      Vendor
+                    </Label>
+                    <Select onValueChange={(value) => { setVendorName(value) }}>
+                      <SelectTrigger className="col-span-3">
+                        <SelectValue placeholder="Select a vendor" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectGroup>
+                          <SelectLabel>Vendors</SelectLabel>
+                          {vendorSelectData.map((type) => (
+                            <SelectItem key={type.vendorName} value={type.vendorName.toString()}>
+                              {type.vendorName}
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
+                  </div>
 
                   <div className="grid grid-cols-4 items-center gap-4">
                     <Label htmlFor="name" className="text-right">
                       Title
                     </Label>
-                    <Input id="name" className="col-span-3" />
+                    <Input id="name" className="col-span-3" value={actTitle} onChange={e => { setActTitle(e.currentTarget.value) }} />
                   </div>
 
                   <div className="grid grid-cols-4 items-center gap-4">
                     <Label htmlFor="username" className="text-right">
                       Description
                     </Label>
-                    <Input id="username" className="col-span-3 h-52" />
+                    <Input id="username" className="col-span-3 h-52" value={actDesc} onChange={e => { setActDesc(e.currentTarget.value) }} />
                   </div>
 
                   <div className="grid grid-cols-4 items-center gap-4">
                     <Label htmlFor="city" className="text-right">
                       City
                     </Label>
-                    <Select>
+                    <Select onValueChange={(value) => { setActCity(value) }}>
                       <SelectTrigger className="col-span-3">
                         <SelectValue placeholder="Select a city" />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectGroup>
                           <SelectLabel>Cities</SelectLabel>
-                          <SelectItem value="apple">Las Vegas</SelectItem>
-                          <SelectItem value="banana">Erbil</SelectItem>
-                          <SelectItem value="blueberry">Grenada</SelectItem>
-                          <SelectItem value="grapes">Paris</SelectItem>
+                          {citySelectData.map((type) => (
+                            <SelectItem key={type.cityName} value={type.cityName.toString()}>
+                              {type.cityName}
+                            </SelectItem>
+                          ))}
                         </SelectGroup>
                       </SelectContent>
                     </Select>
@@ -343,14 +417,14 @@ export default function ActivityPage() {
                     <Label htmlFor="price" className="text-right">
                       Price
                     </Label>
-                    <Input id="price" className="col-span-3" placeholder="$" />
+                    <Input id="price" className="col-span-3" placeholder="$" value={actPrice} onChange={e => { setActPrice(e.currentTarget.value) }} />
                   </div>
 
                   <div className="grid grid-cols-4 items-center gap-4">
                     <Label htmlFor="quantity" className="text-right">
                       Quantity
                     </Label>
-                    <Input id="quantity" className="col-span-3" />
+                    <Input id="quantity" className="col-span-3" value={actQuantity} onChange={e => { setActQuantity(e.currentTarget.value) }} />
                   </div>
 
                   <div className="grid grid-cols-4 items-center gap-4">
@@ -402,15 +476,15 @@ export default function ActivityPage() {
                     <Label htmlFor="year" className="text-right">
                       Full Year
                     </Label>
-                    <Select>
+                    <Select onValueChange={(value) => { setIsFullYear(value) }}>
                       <SelectTrigger className="col-span-3">
                         <SelectValue placeholder="Select Status" />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectGroup>
                           <SelectLabel>Status</SelectLabel>
-                          <SelectItem value="apple">Fixed Date</SelectItem>
-                          <SelectItem value="banana">Flexible Date</SelectItem>
+                          <SelectItem value="fixed">Fixed Date</SelectItem>
+                          <SelectItem value="flexible">Flexible Date</SelectItem>
                         </SelectGroup>
                       </SelectContent>
                     </Select>
@@ -420,15 +494,15 @@ export default function ActivityPage() {
                     <Label htmlFor="year" className="text-right">
                       Holiday
                     </Label>
-                    <Select>
+                    <Select onValueChange={(value) => { setIsHoliday(value) }}>
                       <SelectTrigger className="col-span-3">
                         <SelectValue placeholder="Select Status" />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectGroup>
                           <SelectLabel>Holiday Availability</SelectLabel>
-                          <SelectItem value="apple">Yes</SelectItem>
-                          <SelectItem value="banana">No</SelectItem>
+                          <SelectItem value="yes">Yes</SelectItem>
+                          <SelectItem value="no">No</SelectItem>
                         </SelectGroup>
                       </SelectContent>
                     </Select>
@@ -441,17 +515,18 @@ export default function ActivityPage() {
                     <Label htmlFor="city" className="text-right">
                       Category
                     </Label>
-                    <Select>
+                    <Select onValueChange={(value) => { setActCategory(value) }}>
                       <SelectTrigger className="col-span-3">
                         <SelectValue placeholder="Select a Category" />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectGroup>
                           <SelectLabel>Categories</SelectLabel>
-                          <SelectItem value="apple">Cinema</SelectItem>
-                          <SelectItem value="banana">Fun & Sports</SelectItem>
-                          <SelectItem value="blueberry">Food</SelectItem>
-                          <SelectItem value="grapes">Culture</SelectItem>
+                          {categorySelectData.map((type) => (
+                            <SelectItem key={type.ctTitle} value={type.ctTitle.toString()}>
+                              {type.ctTitle}
+                            </SelectItem>
+                          ))}
                         </SelectGroup>
                       </SelectContent>
                     </Select>
@@ -461,7 +536,7 @@ export default function ActivityPage() {
                     <Label htmlFor="username" className="text-right">
                       Highlights
                     </Label>
-                    <Input id="username" className="col-span-3 h-52" />
+                    <Input id="username" className="col-span-3 h-52" value={actHighlights} onChange={e => { setActHighlights(e.currentTarget.value) }} />
                   </div>
 
                   <div className="grid grid-cols-4 items-center gap-4">
@@ -475,7 +550,7 @@ export default function ActivityPage() {
                     <Label htmlFor="price" className="text-right">
                       Meeting Point
                     </Label>
-                    <Input id="price" className="col-span-3" placeholder="Location" />
+                    <Input id="price" className="col-span-3" placeholder="Location" value={actMeetingPoint} onChange={e => { setMeetingPoint(e.currentTarget.value) }} />
                     <div className="col-span-3"><iframe className="col-span-3 ml-48" src="https://maps.google.com/maps?width=525&amp;height=300&amp;hl=en&amp;q=1%20Grafton%20Street,%20Dublin,%20Ireland+(My%20Business%20Name)&amp;t=&amp;z=16&amp;ie=UTF8&amp;iwloc=B&amp;output=embed"><a href="https://www.gps.ie/">gps tracker sport</a></iframe></div>
                   </div>
 
@@ -483,15 +558,15 @@ export default function ActivityPage() {
                     <Label htmlFor="year" className="text-right">
                       Confirmation
                     </Label>
-                    <Select>
+                    <Select onValueChange={(value) => { setActConfirmation(value) }}>
                       <SelectTrigger className="col-span-3">
                         <SelectValue placeholder="Select Status" />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectGroup>
                           <SelectLabel>Ticket Confirmation Type</SelectLabel>
-                          <SelectItem value="apple">Manual Confirmation</SelectItem>
-                          <SelectItem value="banana">Automatic Confirmation</SelectItem>
+                          <SelectItem value="manual">Manual Confirmation</SelectItem>
+                          <SelectItem value="automatic">Automatic Confirmation</SelectItem>
                         </SelectGroup>
                       </SelectContent>
                     </Select>
@@ -500,7 +575,7 @@ export default function ActivityPage() {
               </div>
             </div>
             <DialogFooter>
-              <Button type="submit">Save changes</Button>
+              <Button type="submit" onClick={() => { addNewActivity() }} disabled={isLoading}>{isLoading ? 'Please Wait ...' : 'Save changes'}</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>

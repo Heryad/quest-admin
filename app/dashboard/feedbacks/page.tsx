@@ -15,8 +15,21 @@ import { Button } from "@/components/ui/button";
 import { Bell, Delete, DeleteIcon, Download, Eye, LucideAArrowDown, LucideDelete, Search, Star, User2, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+
 type Props = {};
 type DataKey = {
+  ID: string;
   userName: string;
   rtDesc: string;
   rtCount: string;
@@ -26,6 +39,10 @@ type DataKey = {
 
 const columns: ColumnDef<DataKey>[] = [
   {
+    accessorKey: 'ID',
+    header: 'ID'
+  },
+  {
     accessorKey: "userName",
     header: "User Name",
     cell: ({ row }) => {
@@ -34,7 +51,7 @@ const columns: ColumnDef<DataKey>[] = [
           <img
             className="h-10 w-10"
             src={`https://api.dicebear.com/7.x/lorelei/svg?seed=${row.getValue(
-              "name"
+              "userName"
             )}`}
             alt="user-image"
           />
@@ -74,7 +91,38 @@ const columns: ColumnDef<DataKey>[] = [
       return(
         <div className="flex">
           <div className="bg-teal-700 w-10 h-10 flex items-center justify-center mr-2 rounded-md p-2 cursor-pointer"><Eye color="white"/></div>
-          <div className="bg-red-700 w-10 h-10 flex items-center justify-center mr-2 rounded-md p-2 cursor-pointer"><X color="white"/></div>
+          <AlertDialog>
+            <AlertDialogTrigger>
+              <Button className="bg-red-700 w-10 h-10 flex items-center justify-center mr-2 rounded-md p-2 cursor-pointer"><X color="white" /></Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This action cannot be undone. This will permanently delete {row.getValue('userName')}'s review
+                  and remove their data from the servers.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={() => {
+                  fetch('https://pear-trusting-femur.glitch.me/v2/delete', {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: new URLSearchParams({
+                      'tbl': 'feedbacks',
+                      'id': row.getValue('ID'),
+                    })
+                  }).then(response => response.json())
+                    .then(data => {
+                     window.location.reload();
+                  });
+                }}>Continue</AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
       )
     }

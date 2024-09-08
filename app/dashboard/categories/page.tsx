@@ -22,14 +22,30 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 
 type Props = {};
 type DataKey = {
+  ID: string;
   ctTitle: string;
   ctIcon: string;
 };
 
 const columns: ColumnDef<DataKey>[] = [
+  {
+    accessorKey: "ID",
+    header: "ID",
+  },
   {
     accessorKey: "ctTitle",
     header: "Category",
@@ -44,6 +60,11 @@ const columns: ColumnDef<DataKey>[] = [
   {
     accessorKey: "activity",
     header: "Activities",
+    cell: ({ row }) => {
+      return (
+        <p>0</p>
+      );
+    },
   },
   {
     accessorKey: "function",
@@ -54,9 +75,37 @@ const columns: ColumnDef<DataKey>[] = [
           <div className="bg-teal-700 w-10 h-10 flex items-center justify-center mr-2 rounded-md p-2 cursor-pointer">
             <Eye color="white" />
           </div>
-          <div className="bg-red-700 w-10 h-10 flex items-center justify-center mr-2 rounded-md p-2 cursor-pointer">
-            <X color="white" />
-          </div>
+          <AlertDialog>
+            <AlertDialogTrigger>
+              <Button className="bg-red-700 w-10 h-10 flex items-center justify-center mr-2 rounded-md p-2 cursor-pointer"><X color="white" /></Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This action cannot be undone. This will permanently delete {row.getValue('ctTitle')}
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={() => {
+                  fetch('https://pear-trusting-femur.glitch.me/v2/delete', {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: new URLSearchParams({
+                      'tbl': 'categories',
+                      'id': row.getValue('ID'),
+                    })
+                  }).then(response => response.json())
+                    .then(data => {
+                     window.location.reload();
+                  });
+                }}>Continue</AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
       );
     },

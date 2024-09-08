@@ -22,6 +22,7 @@ import {
 type Props = {};
 
 type DataKey = {
+  ID: string;
   firstName: string;
   email: string;
   gender: string;
@@ -31,6 +32,10 @@ type DataKey = {
 
 const columns: ColumnDef<DataKey>[] = [
   {
+    accessorKey: "ID",
+    header: "ID"
+  },
+  {
     accessorKey: "firstName",
     header: "User Name",
     cell: ({ row }) => {
@@ -39,7 +44,7 @@ const columns: ColumnDef<DataKey>[] = [
           <img
             className="h-10 w-10"
             src={`https://api.dicebear.com/7.x/lorelei/svg?seed=${row.getValue(
-              "name"
+              "firstName"
             )}`}
             alt="user-image"
           />
@@ -87,7 +92,19 @@ const columns: ColumnDef<DataKey>[] = [
               <AlertDialogFooter>
                 <AlertDialogCancel>Cancel</AlertDialogCancel>
                 <AlertDialogAction onClick={() => {
-                  
+                  fetch('https://pear-trusting-femur.glitch.me/v2/delete', {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: new URLSearchParams({
+                      'tbl': 'users',
+                      'id': row.getValue('ID'),
+                    })
+                  }).then(response => response.json())
+                    .then(data => {
+                     window.location.reload();
+                  });
                 }}>Continue</AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
@@ -121,7 +138,7 @@ export default function UsersPage({ }: Props) {
       .then(data => {
         console.log(data);
         setData(data.data);
-      });
+    });
   }, [])
 
   return (
